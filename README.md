@@ -76,7 +76,7 @@ Both virtual machines were connected to the same Azure virtual network:
 db-vnet
 ```
 
-The environment included the virtual machines and their supporting network interfaces, public IP addresses, disks, and Network Security Groups.
+The environment also included the supporting network interfaces, public IP addresses, disks, and Network Security Groups for each virtual machine.
 
 ```text
 Microsoft Azure
@@ -106,7 +106,7 @@ From `windows-vm`, I continuously pinged the private IP address of `linux-vm`:
 ping 172.16.1.4 -t
 ```
 
-At the same time, I captured traffic with Wireshark using the display filter:
+At the same time, I captured the traffic with Wireshark using the display filter:
 
 ```text
 icmp
@@ -144,28 +144,13 @@ While continuously pinging the Linux VM, the responses changed from successful r
 Request timed out.
 ```
 
-Wireshark also changed from showing request/reply pairs to showing only outgoing ICMP requests with no responses.
-
-```text
-Before NSG Rule
-
-windows-vm ── ICMP Request ──> linux-vm
-windows-vm <── ICMP Reply ──── linux-vm
-                         ✓
-
-
-After ICMP Deny Rule
-
-windows-vm ── ICMP Request ──> NSG ──X──> linux-vm
-windows-vm <──── No Reply
-                         ✗
-```
+Wireshark also changed from showing ICMP request/reply pairs to showing only outgoing requests with no responses.
 
 ![NSG Blocking ICMP Traffic](images/nsg-icmp-block.png)
 
 Removing the deny rule restored normal communication.
 
-This demonstrated how Network Security Groups can be used to control traffic and how packet captures can help troubleshoot connectivity problems.
+This demonstrated how Network Security Groups can control traffic between Azure resources and how Wireshark can be used to troubleshoot connectivity problems.
 
 ---
 
@@ -199,11 +184,11 @@ At the same time, I captured the connection in Wireshark using:
 ssh
 ```
 
-Wireshark showed SSHv2 traffic traveling between the two private IP addresses over TCP port 22.
+Wireshark showed SSH traffic traveling between the two private IP addresses over TCP port 22.
 
 ![SSH Linux Connection](images/ssh-linux-connection.png)
 
-This demonstrated how SSH can be used to securely administer a Linux system remotely while the underlying network traffic remains encrypted.
+This demonstrated how SSH can be used to securely administer a Linux system remotely while the session's data is encrypted in transit.
 
 ---
 
@@ -221,23 +206,9 @@ nslookup google.com
 
 The lookup returned IP addresses associated with the domain while Wireshark displayed the corresponding DNS queries and responses.
 
-```text
-google.com
-    │
-    ▼
-DNS Query
-    │
-    ▼
-DNS Server
-    │
-    ▼
-DNS Response
-    │
-    ▼
-IP Address
-```
-
 ![DNS Analysis](images/dns-analysis.png)
+
+This demonstrated how DNS translates human-readable domain names into IP addresses that computers can use to communicate.
 
 ### DHCP
 
@@ -247,7 +218,7 @@ I filtered for DHCP traffic and renewed the Windows VM's network configuration u
 ipconfig /renew
 ```
 
-This allowed me to observe DHCP-related traffic associated with automatically configuring the system's network connection.
+This allowed me to observe DHCP-related traffic used to automatically configure network settings for the virtual machine.
 
 ### RDP
 
@@ -267,7 +238,7 @@ Throughout the lab, I also practiced basic Azure resource administration.
 
 I used **Cost Management → Cost Analysis** to review charges associated with the resources running in my Azure subscription.
 
-I also learned how resource groups make it easier to organize and manage related cloud infrastructure. Once the lab resources are no longer needed, the resource groups can be removed to clean up the environment and prevent unnecessary resource usage.
+I also learned how resource groups make it easier to organize and manage related cloud infrastructure. Once lab resources are no longer needed, the resource group and its resources can be removed to clean up the environment and prevent unnecessary usage and charges.
 
 ---
 
@@ -306,8 +277,8 @@ azure-infrastructure-and-networking-lab/
 └── images/
     ├── azure-blob-storage.png
     ├── azure-network-environment.png
+    ├── dns-analysis.png
     ├── icmp-connectivity.png
     ├── nsg-icmp-block.png
-    ├── ssh-linux-connection.png
-    └── dns-analysis.png
+    └── ssh-linux-connection.png
 ```
