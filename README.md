@@ -13,6 +13,7 @@ I created a small Azure environment with Windows and Linux virtual machines, con
 - Azure Virtual Network (VNet)
 - Network Security Groups (NSGs)
 - Azure Blob Storage
+- Locally Redundant Storage (LRS)
 - Windows 11 Pro
 - Ubuntu Server 24.04 LTS
 - Wireshark
@@ -28,7 +29,9 @@ I created a small Azure environment with Windows and Linux virtual machines, con
 
 ## ☁️ 1. Configure Azure Storage
 
-I started by creating an Azure resource group and storage account to practice organizing and managing cloud resources.
+I started by creating the `daniel-berg` resource group in **West US 2** and a storage account named `db13` to practice organizing and managing cloud resources.
+
+I configured the storage account for **Azure Blob Storage** using **Locally Redundant Storage (LRS)**.
 
 Inside the storage account, I created a Blob Storage container called:
 
@@ -36,7 +39,13 @@ Inside the storage account, I created a Blob Storage container called:
 azure-lab
 ```
 
-I then uploaded a text file to the container and edited its contents directly through Azure.
+I then created and uploaded:
+
+```text
+azure-storage.txt
+```
+
+After uploading the file, I edited its contents directly through Azure and downloaded the modified version to verify the changes.
 
 ```text
 Resource Group
@@ -65,9 +74,9 @@ Next, I created a separate resource group for the networking portion of the lab:
 RG-Network-Activities
 ```
 
-I deployed two virtual machines:
+I deployed two virtual machines in **East US 2**:
 
-- **windows-vm** — Windows 11 Pro
+- **windows-vm** — Windows 11 Pro (`Standard_D2als_v6`)
 - **linux-vm** — Ubuntu Server 24.04 LTS
 
 Both virtual machines were connected to the same Azure virtual network:
@@ -90,7 +99,7 @@ windows-vm  linux-vm
 Windows 11  Ubuntu Linux
 ```
 
-Connecting both systems to the same virtual network allowed them to communicate using their private IP addresses.
+I connected to `windows-vm` using **Remote Desktop (RDP)** through its public IP address. From the Windows VM, I could then communicate with `linux-vm` across the Azure virtual network using its private IP address.
 
 ![Azure Network Environment](images/azure-network-environment.png)
 
@@ -98,9 +107,17 @@ Connecting both systems to the same virtual network allowed them to communicate 
 
 ## 🌐 3. Test Network Connectivity with ICMP
 
-After building the environment, I tested communication between the two virtual machines.
+After building the environment, I installed **Wireshark** on `windows-vm` to capture and analyze network traffic.
 
-From `windows-vm`, I continuously pinged the private IP address of `linux-vm`:
+I first used PowerShell to view the Windows VM's network configuration:
+
+```powershell
+ipconfig /all
+```
+
+This displayed information such as IP configuration, DNS and DHCP information, and network adapter details.
+
+I then tested communication between the two virtual machines by continuously pinging the private IP address of `linux-vm`:
 
 ```powershell
 ping 172.16.1.4 -t
@@ -156,7 +173,7 @@ This demonstrated how Network Security Groups can control traffic between Azure 
 
 ## 🐧 5. Connect to Linux with SSH
 
-With connectivity restored, I remotely connected from the Windows VM to the Linux VM using SSH.
+With connectivity restored, I remotely connected from the Windows VM to the Linux VM using **SSH**.
 
 From PowerShell on `windows-vm`, I connected using the Linux VM's private IP address:
 
@@ -164,7 +181,7 @@ From PowerShell on `windows-vm`, I connected using the Linux VM's private IP add
 ssh labuser@172.16.1.4
 ```
 
-After connecting, the terminal changed to the Linux shell.
+After connecting, the terminal changed from the Windows PowerShell prompt to the Linux shell.
 
 I verified which system I was connected to using:
 
@@ -184,7 +201,7 @@ At the same time, I captured the connection in Wireshark using:
 ssh
 ```
 
-Wireshark showed SSH traffic traveling between the two private IP addresses over TCP port 22.
+Wireshark showed SSH traffic traveling between the two private IP addresses over **TCP port 22**.
 
 ![SSH Linux Connection](images/ssh-linux-connection.png)
 
@@ -212,7 +229,7 @@ This demonstrated how DNS translates human-readable domain names into IP address
 
 ### DHCP
 
-I filtered for DHCP traffic and renewed the Windows VM's network configuration using:
+I filtered Wireshark for DHCP traffic and renewed the Windows VM's network configuration using:
 
 ```powershell
 ipconfig /renew
@@ -222,7 +239,7 @@ This allowed me to observe DHCP-related traffic used to automatically configure 
 
 ### RDP
 
-Because I was accessing `windows-vm` through Remote Desktop, I also inspected the traffic associated with the RDP connection using:
+Because I was accessing `windows-vm` through Remote Desktop, I also inspected the traffic associated with the RDP connection using the Wireshark filter:
 
 ```text
 tcp.port == 3389
@@ -238,7 +255,9 @@ Throughout the lab, I also practiced basic Azure resource administration.
 
 I used **Cost Management → Cost Analysis** to review charges associated with the resources running in my Azure subscription.
 
-I also learned how resource groups make it easier to organize and manage related cloud infrastructure. Once lab resources are no longer needed, the resource group and its resources can be removed to clean up the environment and prevent unnecessary usage and charges.
+I also learned how resource groups make it easier to organize related cloud infrastructure and manage the lifecycle of multiple resources together.
+
+Once the lab resources are no longer needed, the resource groups and their associated resources can be removed to clean up the environment and prevent unnecessary usage and charges.
 
 ---
 
@@ -250,9 +269,12 @@ I gained hands-on experience with:
 
 - Creating and organizing Microsoft Azure resources
 - Creating and managing Azure Blob Storage
+- Working with Locally Redundant Storage (LRS)
 - Deploying Windows and Linux virtual machines
 - Connecting virtual machines through an Azure VNet
 - Working with private and public IP addresses
+- Accessing a Windows VM through Remote Desktop
+- Inspecting Windows network configuration with PowerShell
 - Testing network connectivity with ICMP and `ping`
 - Capturing and analyzing network traffic with Wireshark
 - Configuring Network Security Group rules
@@ -263,7 +285,7 @@ I gained hands-on experience with:
 - Identifying Remote Desktop traffic
 - Reviewing Azure resource costs
 
-The biggest takeaway was seeing how **virtual machines, virtual networks, IP addressing, security rules, and network protocols all work together in a cloud environment.**
+The biggest takeaway was seeing how **virtual machines, virtual networks, IP addressing, security rules, remote access, and network protocols all work together in a cloud environment.**
 
 ---
 
